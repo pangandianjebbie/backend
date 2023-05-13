@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\UserRequest;
@@ -53,11 +54,29 @@ class UserController extends Controller
 
     public function email(UserRequest $request, string $id)
     {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validated();
+
+        $user->email = $validated['email'];
+
+        $user->save();
+
+        return $user;
 
     }
 
     public function password(UserRequest $request, string $id)
     {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validated();
+
+        $user->password = Hash::make($validated['password']);
+
+        $user->save();
+
+        return $user;
 
     }
 
@@ -70,6 +89,23 @@ class UserController extends Controller
       $user = User::findOrfail($id);
 
       $user->delete();
+
+      return $user;
+    }
+
+    public function image(UserRequest $request, string $id)
+    {
+      $user = User::findOrfail($id);
+
+      if ( !is_null($user->image) ){
+        Storage::disk('public')->delete($user->image);
+      }
+
+      $validated = $request->validated();
+
+      $user->image = $request->file('image')->storePublicly('images', 'public');
+
+      $user->save();
 
       return $user;
     }
